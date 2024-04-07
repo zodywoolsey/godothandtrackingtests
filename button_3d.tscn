@@ -1,0 +1,62 @@
+[gd_scene load_steps=4 format=3 uid="uid://drohtn5s3r7l1"]
+
+[sub_resource type="GDScript" id="GDScript_tpys6"]
+script/source = "extends Node3D
+
+@onready var rigid_body_3d_2 = $RigidBody3D2
+
+signal activated
+@onready var label_3d = $Label3D
+
+var is_activated:bool=false
+
+func _physics_process(delta):
+	if rigid_body_3d_2.position.z < .01:
+		if !is_activated:
+			activated.emit()
+			label_3d.text = \"new press\"
+		else:
+			label_3d.text = \"pressed\"
+		is_activated = true
+	elif rigid_body_3d_2.position.z > .01:
+		is_activated = false
+		label_3d.text = \"not pressed\"
+"
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_puibl"]
+size = Vector3(0.1, 0.1, 0.01)
+
+[sub_resource type="BoxMesh" id="BoxMesh_pud4v"]
+size = Vector3(0.1, 0.1, 0.01)
+
+[node name="Button3D" type="Node3D"]
+script = SubResource("GDScript_tpys6")
+
+[node name="RigidBody3D" type="RigidBody3D" parent="."]
+freeze = true
+
+[node name="RigidBody3D2" type="RigidBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.025)
+gravity_scale = 0.0
+can_sleep = false
+continuous_cd = true
+constant_force = Vector3(0, 0, 5)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="RigidBody3D2"]
+shape = SubResource("BoxShape3D_puibl")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="RigidBody3D2"]
+mesh = SubResource("BoxMesh_pud4v")
+
+[node name="SliderJoint3D" type="SliderJoint3D" parent="."]
+transform = Transform3D(-2.18557e-07, 0, 1, 0, 1, 0, -1, 0, -2.18557e-07, 0, 0, 0)
+node_a = NodePath("../RigidBody3D")
+node_b = NodePath("../RigidBody3D2")
+linear_limit/upper_distance = 0.03
+linear_limit/lower_distance = 0.0
+
+[node name="Label3D" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0)
+text = "dist:"
+font_size = 12
+outline_size = 2

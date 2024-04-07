@@ -1,0 +1,13 @@
+[gd_resource type="StandardMaterial3D" load_steps=2 format=3 uid="uid://hechy6mkrg7w"]
+
+[ext_resource type="Texture2D" uid="uid://c1nwm884hxrgs" path="res://addons/kenney_prototype_textures/dark/texture_01.png" id="1_w0uyw"]
+
+[resource]
+shading_mode = 2
+albedo_texture = ExtResource("1_w0uyw")
+heightmap_scale = 16.0
+heightmap_deep_parallax = true
+heightmap_min_layers = 64
+heightmap_max_layers = 64
+heightmap_texture = ExtResource("1_w0uyw")
+uv1_scale = Vector3(10, 10, 10)

@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://u3phvyfshldw"]
+
+[ext_resource type="Script" path="res://better_openxr_hand.gd" id="1_b41yq"]
+
+[node name="better_openxr_hand" type="Node3D"]
+script = ExtResource("1_b41yq")
