@@ -1,10 +1,10 @@
 [gd_scene load_steps=3 format=3 uid="uid://r3d6pc4pr3qg"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_c70qh"]
-size = Vector3(0.1, 0.1, 0.1)
+size = Vector3(0.05, 0.05, 0.05)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_jnidp"]
-size = Vector3(0.1, 0.1, 0.1)
+size = Vector3(0.05, 0.05, 0.05)
 
 [node name="RigidBody3D" type="RigidBody3D"]
 gravity_scale = 0.0

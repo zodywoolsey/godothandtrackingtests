@@ -1,0 +1,64 @@
+[gd_scene load_steps=4 format=3 uid="uid://c1s6wpkt1hxc"]
+
+[sub_resource type="GDScript" id="GDScript_tpys6"]
+script/source = "extends Node3D
+
+@onready var mesh_instance_3d = $MeshInstance3D
+@onready var shape_cast_3d = $ShapeCast3D
+signal activated
+@onready var label_3d = $Label3D
+var is_activated:bool=false
+var target:float = 0.0
+
+@export var dist:float=0.025
+
+func _ready():
+	shape_cast_3d.target_position = Vector3(0,0,dist*2.0)
+
+func _physics_process(delta):
+	target = shape_cast_3d.target_position.z
+	if shape_cast_3d.is_colliding():
+		target = to_local(shape_cast_3d.get_collision_point(0)).z
+	if target < shape_cast_3d.target_position.z/2.0:
+		if !is_activated:
+			activated.emit()
+			label_3d.text = \"new press\"
+		else:
+			label_3d.text = \"pressed\"
+		is_activated = true
+	elif target > shape_cast_3d.target_position.z/2.0:
+		is_activated = false
+		label_3d.text = \"not pressed\"
+	mesh_instance_3d.position.z = lerpf(mesh_instance_3d.position.z,target,.4)
+"
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_x02lx"]
+size = Vector3(0.1, 0.1, 0.01)
+
+[sub_resource type="BoxMesh" id="BoxMesh_i5xwf"]
+size = Vector3(0.1, 0.1, 0.01)
+
+[node name="Button3D" type="Node3D"]
+script = SubResource("GDScript_tpys6")
+
+[node name="Label3D" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0)
+visible = false
+text = "dist:"
+font_size = 12
+outline_size = 2
+
+[node name="Label3D2" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0)
+text = "shapecast
+cube button"
+font_size = 6
+outline_size = 2
+
+[node name="ShapeCast3D" type="ShapeCast3D" parent="."]
+shape = SubResource("BoxShape3D_x02lx")
+target_position = Vector3(0, 0, 0)
+collision_mask = 2
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = SubResource("BoxMesh_i5xwf")

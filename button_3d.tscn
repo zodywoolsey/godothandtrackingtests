@@ -37,6 +37,8 @@ freeze = true
 
 [node name="RigidBody3D2" type="RigidBody3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.025)
+collision_layer = 2
+collision_mask = 2
 gravity_scale = 0.0
 can_sleep = false
 continuous_cd = true
@@ -57,6 +59,13 @@ linear_limit/lower_distance = 0.0
 
 [node name="Label3D" type="Label3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0)
+visible = false
 text = "dist:"
-font_size = 12
+font_size = 6
+outline_size = 2
+
+[node name="Label3D2" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0)
+text = "physics joint"
+font_size = 6
 outline_size = 2
