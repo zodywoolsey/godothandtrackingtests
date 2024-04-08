@@ -1,0 +1,120 @@
+[gd_scene load_steps=6 format=3 uid="uid://dsx7exupuuppf"]
+
+[ext_resource type="AudioStream" uid="uid://b8gjuof68067b" path="res://ui boop.ogg" id="1_ybxqv"]
+
+[sub_resource type="GDScript" id="GDScript_tpys6"]
+script/source = "extends Node3D
+
+@onready var mesh_instance_3d = $MeshInstance3D
+@onready var shape_cast_3d = $ShapeCast3D
+@onready var shape_cast_3d_2 = $ShapeCast3D2
+@onready var audio_stream_player_3d = $AudioStreamPlayer3D
+@onready var label_3d = $Label3D
+var torus:TorusMesh
+signal activated
+var is_activated:bool=false
+var target:float = 0.0
+var oldtarget:float = 0.0
+
+@export var dist:float=0.025
+@export var steps:float=1.0
+
+func _ready():
+	torus = mesh_instance_3d.mesh
+	#shape_cast_3d.position = shape_cast_3d.target_position*-1.0
+	shape_cast_3d.target_position.y = dist*2.0
+	shape_cast_3d_2.target_position = shape_cast_3d.target_position
+
+func _physics_process(delta):
+	target = shape_cast_3d.target_position.y
+	if shape_cast_3d.is_colliding():
+		target = to_local(shape_cast_3d.get_collision_point(0)).z
+	if shape_cast_3d_2.is_colliding():
+		if abs(to_local(shape_cast_3d_2.get_collision_point(0)).z) < target:
+			target = abs(to_local(shape_cast_3d_2.get_collision_point(0)).z)
+	print(target)
+	target = clamp(
+		remap(
+			target,
+			shape_cast_3d.target_position.y,
+			shape_cast_3d.target_position.y/2.0,
+			1.0,
+			0.0
+		),
+		0.0,
+		1.0
+	)
+	if steps > 0:
+		target = ceil(target*(steps))/(steps)
+	if oldtarget != target:
+		print(oldtarget)
+		print(target)
+		print('newtarget')
+		audio_stream_player_3d.play()
+		oldtarget = target
+	if target < shape_cast_3d.target_position.y/2.0:
+		if !is_activated:
+			activated.emit()
+			audio_stream_player_3d.play()
+			label_3d.text = \"new press\"
+		else:
+			label_3d.text = \"pressed\"
+		is_activated = true
+	elif target > shape_cast_3d.target_position.y/1.8:
+		is_activated = false
+		label_3d.text = \"not pressed\"
+	#mesh_instance_3d.position.z = lerpf(mesh_instance_3d.position.z,target,.4)
+	torus.inner_radius = lerpf(torus.inner_radius,(target*.04)+.005,.2)
+	torus.outer_radius = lerpf(torus.outer_radius,(target*.04)+.015,.2)
+	audio_stream_player_3d.pitch_scale = remap(target,0.0,1.0,.75,1.0)
+"
+
+[sub_resource type="TorusMesh" id="TorusMesh_yi7j4"]
+inner_radius = 0.045
+outer_radius = 0.055
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_sflmq"]
+height = 0.01
+radius = 0.05
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_c1ngk"]
+height = 0.01
+radius = 0.05
+
+[node name="TorusButton" type="Node3D"]
+script = SubResource("GDScript_tpys6")
+
+[node name="Label3D" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0)
+visible = false
+text = "dist:"
+font_size = 12
+outline_size = 2
+
+[node name="Label3D2" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0)
+text = "shapecast
+torus button"
+font_size = 6
+outline_size = 2
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0)
+mesh = SubResource("TorusMesh_yi7j4")
+skeleton = NodePath("")
+
+[node name="ShapeCast3D" type="ShapeCast3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0)
+shape = SubResource("CylinderShape3D_sflmq")
+target_position = Vector3(0, 0.1, 0)
+collision_mask = 2
+
+[node name="ShapeCast3D2" type="ShapeCast3D" parent="."]
+transform = Transform3D(-1, 0, -8.74228e-08, 8.74228e-08, -4.37114e-08, -1, -3.82137e-15, -1, 4.37114e-08, 0, 0, 0)
+shape = SubResource("CylinderShape3D_c1ngk")
+target_position = Vector3(0, 0.1, 0)
+collision_mask = 2
+
+[node name="AudioStreamPlayer3D" type="AudioStreamPlayer3D" parent="."]
+stream = ExtResource("1_ybxqv")
+max_polyphony = 32

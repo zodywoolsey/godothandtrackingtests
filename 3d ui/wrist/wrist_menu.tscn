@@ -1,0 +1,120 @@
+[gd_scene load_steps=7 format=3 uid="uid://b6lc6k5xetr82"]
+
+[ext_resource type="AudioStream" uid="uid://b8gjuof68067b" path="res://ui boop.ogg" id="1_j7ug8"]
+[ext_resource type="PackedScene" uid="uid://r3d6pc4pr3qg" path="res://rigid_body_3d.tscn" id="2_nf2sy"]
+
+[sub_resource type="GDScript" id="GDScript_tpys6"]
+script/source = "extends Node3D
+
+@onready var mesh_instance_3d = $MeshInstance3D
+@onready var shape_cast_3d = $ShapeCast3D
+@onready var audio_stream_player_3d = $AudioStreamPlayer3D
+@onready var label_3d = $Label3D
+signal activated
+var is_activated:bool=false
+var target:float = 0.0
+var hand:int = 0
+
+@export var dist:float=0.025
+@export var staticlabeltext:String=\"shapecast\\ncube button\"
+@export var steps:float=1.0
+
+func _ready():
+	if hand == 0:
+		shape_cast_3d.collision_mask=32
+	elif hand == 1:
+		shape_cast_3d.collision_mask=16
+	shape_cast_3d.target_position = Vector3(0,0,dist*2.0)
+	label_3d.text = staticlabeltext
+
+func _physics_process(delta):
+	target = shape_cast_3d.target_position.z
+	if shape_cast_3d.is_colliding():
+		target = to_local(shape_cast_3d.get_collision_point(0)).z
+	target = clamp(
+		remap(
+			target,
+			shape_cast_3d.target_position.z,
+			shape_cast_3d.target_position.z/2.0,
+			1.0,
+			0.0
+		),
+		0.0,
+		1.0
+	)
+	if steps > 0:
+		target = ceil(target*(steps))/(steps)
+	if target < shape_cast_3d.target_position.z/2.0:
+		if !is_activated:
+			activated.emit()
+			audio_stream_player_3d.play()
+		is_activated = true
+	elif target > shape_cast_3d.target_position.z/1.8:
+		is_activated = false
+	mesh_instance_3d.position.z = lerpf(
+		mesh_instance_3d.position.z,
+		lerpf(0.0,shape_cast_3d.target_position.z,target),
+		.3
+		)
+"
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_x02lx"]
+size = Vector3(0.02, 0.02, 0.01)
+
+[sub_resource type="BoxMesh" id="BoxMesh_i5xwf"]
+size = Vector3(0.02, 0.02, 0.01)
+
+[sub_resource type="GDScript" id="GDScript_6wwhq"]
+script/source = "extends Node3D
+
+@onready var button_3d = $\"../\"
+@onready var rigid_body_3d = $RigidBody3D
+
+var state := 0;
+
+func _ready():
+	button_3d.activated.connect(func():
+		match state:
+			0:
+				state = 1
+				rigid_body_3d.global_gravity = -.1
+			1:
+				state = 2
+				rigid_body_3d.global_gravity = 0.0
+			2:
+				state = 0
+				rigid_body_3d.global_gravity = .1
+		)
+"
+
+[node name="Button3D" type="Node3D"]
+transform = Transform3D(-1, -8.74228e-08, 3.82137e-15, 0, -4.37114e-08, -1, 8.74228e-08, -1, 4.37114e-08, 0, -0.0293879, 0)
+script = SubResource("GDScript_tpys6")
+
+[node name="Label3D" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0)
+visible = false
+text = "dist:"
+font_size = 6
+outline_size = 2
+
+[node name="ShapeCast3D" type="ShapeCast3D" parent="."]
+shape = SubResource("BoxShape3D_x02lx")
+target_position = Vector3(0, 0, 0)
+collision_mask = 0
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = SubResource("BoxMesh_i5xwf")
+
+[node name="AudioStreamPlayer3D" type="AudioStreamPlayer3D" parent="."]
+stream = ExtResource("1_j7ug8")
+max_polyphony = 32
+
+[node name="iterate gravity" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 0)
+script = SubResource("GDScript_6wwhq")
+
+[node name="RigidBody3D" parent="iterate gravity" instance=ExtResource("2_nf2sy")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.3, -1.65979, 0.568858)
+visible = false
+freeze = true

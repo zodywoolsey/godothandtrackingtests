@@ -1,35 +1,55 @@
-[gd_scene load_steps=4 format=3 uid="uid://c1s6wpkt1hxc"]
+[gd_scene load_steps=5 format=3 uid="uid://c1s6wpkt1hxc"]
+
+[ext_resource type="AudioStream" uid="uid://b8gjuof68067b" path="res://ui boop.ogg" id="1_y8j1p"]
 
 [sub_resource type="GDScript" id="GDScript_tpys6"]
 script/source = "extends Node3D
 
 @onready var mesh_instance_3d = $MeshInstance3D
 @onready var shape_cast_3d = $ShapeCast3D
-signal activated
+@onready var audio_stream_player_3d = $AudioStreamPlayer3D
 @onready var label_3d = $Label3D
+signal activated
 var is_activated:bool=false
 var target:float = 0.0
 
 @export var dist:float=0.025
+@export var staticlabeltext:String=\"shapecast\\ncube button\"
+@export var steps:float=1.0
 
 func _ready():
 	shape_cast_3d.target_position = Vector3(0,0,dist*2.0)
+	label_3d.text = staticlabeltext
 
 func _physics_process(delta):
 	target = shape_cast_3d.target_position.z
 	if shape_cast_3d.is_colliding():
 		target = to_local(shape_cast_3d.get_collision_point(0)).z
+	target = clamp(
+		remap(
+			target,
+			shape_cast_3d.target_position.z,
+			shape_cast_3d.target_position.z/2.0,
+			1.0,
+			0.0
+		),
+		0.0,
+		1.0
+	)
+	if steps > 0:
+		target = ceil(target*(steps))/(steps)
 	if target < shape_cast_3d.target_position.z/2.0:
 		if !is_activated:
 			activated.emit()
-			label_3d.text = \"new press\"
-		else:
-			label_3d.text = \"pressed\"
+			audio_stream_player_3d.play()
 		is_activated = true
-	elif target > shape_cast_3d.target_position.z/2.0:
+	elif target > shape_cast_3d.target_position.z/1.8:
 		is_activated = false
-		label_3d.text = \"not pressed\"
-	mesh_instance_3d.position.z = lerpf(mesh_instance_3d.position.z,target,.4)
+	mesh_instance_3d.position.z = lerpf(
+		mesh_instance_3d.position.z,
+		lerpf(0.0,shape_cast_3d.target_position.z,target),
+		.3
+		)
 "
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_x02lx"]
@@ -43,15 +63,7 @@ script = SubResource("GDScript_tpys6")
 
 [node name="Label3D" type="Label3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0)
-visible = false
 text = "dist:"
-font_size = 12
-outline_size = 2
-
-[node name="Label3D2" type="Label3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0)
-text = "shapecast
-cube button"
 font_size = 6
 outline_size = 2
 
@@ -62,3 +74,7 @@ collision_mask = 2
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="."]
 mesh = SubResource("BoxMesh_i5xwf")
+
+[node name="AudioStreamPlayer3D" type="AudioStreamPlayer3D" parent="."]
+stream = ExtResource("1_y8j1p")
+max_polyphony = 32

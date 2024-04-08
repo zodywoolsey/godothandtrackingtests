@@ -1,11 +1,12 @@
-[gd_scene load_steps=11 format=3 uid="uid://jio7glq5myw4"]
+[gd_scene load_steps=13 format=3 uid="uid://jio7glq5myw4"]
 
 [ext_resource type="Script" path="res://main.gd" id="1_nqt6r"]
 [ext_resource type="Material" uid="uid://hechy6mkrg7w" path="res://addons/kenney_prototype_textures/triplanar/dark/dark_12.tres" id="3_f10yo"]
 [ext_resource type="Script" path="res://better_openxr_hand.gd" id="3_hk8o6"]
-[ext_resource type="PackedScene" uid="uid://dsx7exupuuppf" path="res://torus_button_3d_shapecast.tscn" id="4_1pfqw"]
-[ext_resource type="PackedScene" uid="uid://drohtn5s3r7l1" path="res://button_3d.tscn" id="4_bxgd6"]
-[ext_resource type="PackedScene" uid="uid://c1s6wpkt1hxc" path="res://button_3d_shapecast.tscn" id="6_ttlyc"]
+[ext_resource type="PackedScene" uid="uid://dsx7exupuuppf" path="res://3d ui/buttons/torus_button_3d_shapecast.tscn" id="4_1pfqw"]
+[ext_resource type="PackedScene" uid="uid://c1s6wpkt1hxc" path="res://3d ui/buttons/button_3d_shapecast.tscn" id="6_ttlyc"]
+[ext_resource type="PackedScene" uid="uid://dy7qrlay3bedx" path="res://3d ui/buttons/platform button.tscn" id="7_3ajlk"]
+[ext_resource type="PackedScene" uid="uid://r3d6pc4pr3qg" path="res://rigid_body_3d.tscn" id="8_3kakt"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_5p2bf"]
 sky_horizon_color = Color(0.64625, 0.65575, 0.67075, 1)
@@ -16,6 +17,7 @@ sky_material = SubResource("ProceduralSkyMaterial_5p2bf")
 
 [sub_resource type="Environment" id="Environment_xf38j"]
 background_mode = 2
+background_color = Color(0, 0, 0, 0)
 sky = SubResource("Sky_44bc6")
 tonemap_mode = 3
 fog_height = 0.55
@@ -35,6 +37,29 @@ func _ready():
 		)
 "
 
+[sub_resource type="GDScript" id="GDScript_hpwp3"]
+script/source = "extends Node3D
+
+@onready var button_3d = $\"../\"
+@onready var rigid_body_3d = $\"../RigidBody3D\"
+
+var state := 0;
+
+func _ready():
+	button_3d.activated.connect(func():
+		match state:
+			0:
+				state = 1
+				rigid_body_3d.global_gravity = -.1
+			1:
+				state = 2
+				rigid_body_3d.global_gravity = 0.0
+			2:
+				state = 0
+				rigid_body_3d.global_gravity = .1
+		)
+"
+
 [node name="Node3D" type="Node3D"]
 script = ExtResource("1_nqt6r")
 
@@ -45,7 +70,7 @@ environment = SubResource("Environment_xf38j")
 transform = Transform3D(-0.866023, -0.433016, 0.250001, 0, 0.499998, 0.866027, -0.500003, 0.749999, -0.43301, 0, 0, 0)
 
 [node name="XROrigin3D" type="XROrigin3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.6, 0)
+current = true
 
 [node name="XRCamera3D" type="XRCamera3D" parent="XROrigin3D"]
 
@@ -57,27 +82,30 @@ hand = 1
 script = ExtResource("3_hk8o6")
 
 [node name="CSGBox3D" type="CSGBox3D" parent="."]
+visible = false
 material_override = ExtResource("3_f10yo")
 use_collision = true
 size = Vector3(10, 1, 10)
 
 [node name="Button3D2" parent="." instance=ExtResource("4_1pfqw")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.1, 1.65979, -0.568858)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.1, 1.65979, -0.568858)
 
 [node name="spawn box" type="Node3D" parent="Button3D2"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 0)
 script = SubResource("GDScript_cs4mm")
 
-[node name="Button3D" parent="." instance=ExtResource("4_bxgd6")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.1, 1.65979, -0.568858)
-
-[node name="spawn box" type="Node3D" parent="Button3D"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7.45058e-09, -0.1, 0)
-script = SubResource("GDScript_cs4mm")
-
 [node name="Button3D3" parent="." instance=ExtResource("6_ttlyc")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.3, 1.65979, -0.568858)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.2, 1.65979, -0.568858)
+staticlabeltext = "gravity iterator"
 
-[node name="spawn box" type="Node3D" parent="Button3D3"]
+[node name="iterate gravity" type="Node3D" parent="Button3D3"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 0)
-script = SubResource("GDScript_cs4mm")
+script = SubResource("GDScript_hpwp3")
+
+[node name="RigidBody3D" parent="Button3D3" instance=ExtResource("8_3kakt")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.3, -1.65979, 0.568858)
+visible = false
+freeze = true
+
+[node name="PlatformButton" parent="." instance=ExtResource("7_3ajlk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.458161, 1.6, -0.5)

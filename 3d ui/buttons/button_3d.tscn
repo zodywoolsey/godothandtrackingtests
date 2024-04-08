@@ -1,9 +1,12 @@
-[gd_scene load_steps=4 format=3 uid="uid://drohtn5s3r7l1"]
+[gd_scene load_steps=5 format=3 uid="uid://drohtn5s3r7l1"]
+
+[ext_resource type="AudioStream" uid="uid://b8gjuof68067b" path="res://ui boop.ogg" id="1_tbouo"]
 
 [sub_resource type="GDScript" id="GDScript_tpys6"]
 script/source = "extends Node3D
 
 @onready var rigid_body_3d_2 = $RigidBody3D2
+@onready var audio_stream_player_3d = $AudioStreamPlayer3D
 
 signal activated
 @onready var label_3d = $Label3D
@@ -14,6 +17,7 @@ func _physics_process(delta):
 	if rigid_body_3d_2.position.z < .01:
 		if !is_activated:
 			activated.emit()
+			audio_stream_player_3d.play()
 			label_3d.text = \"new press\"
 		else:
 			label_3d.text = \"pressed\"
@@ -69,3 +73,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0)
 text = "physics joint"
 font_size = 6
 outline_size = 2
+
+[node name="AudioStreamPlayer3D" type="AudioStreamPlayer3D" parent="."]
+stream = ExtResource("1_tbouo")
+max_polyphony = 32
