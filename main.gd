@@ -5,8 +5,7 @@ extends Node3D
 
 func _ready():
 	init_xr()
-	# testing for detecting trackers (attempting to find pose data for more rich
-	#	hand tracking interactions without adding too much more perf overhead
+	# testing for detecting trackers
 	XRServer.tracker_added.connect(func(tracker_name:String,type:int):
 		print('tracker added')
 		print(tracker_name)

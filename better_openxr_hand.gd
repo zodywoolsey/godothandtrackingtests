@@ -8,8 +8,42 @@ extends Node3D
 @export var hand:int = 0
 #hold a reference to the xr interface for easy access
 var interface:OpenXRInterface
+#track the last position and rotation of the of each joint for gesture detection
+var joint_positions:Array[Vector3]
+var joint_rotations:Array[Vector3]
+
+#preload the ui sound
+var ui_boop = preload("res://ui boop.ogg")
+
+func _ready():
+	joint_positions.resize(26)
+	joint_rotations.resize(26)
+
+var index_pointing := false
 
 func _physics_process(delta):
+	if hand == 1:
+		var index := (
+			joint_rotations[OpenXRInterface.HAND_JOINT_INDEX_METACARPAL].distance_to(
+				joint_rotations[OpenXRInterface.HAND_JOINT_INDEX_PROXIMAL]
+			)+
+			joint_rotations[OpenXRInterface.HAND_JOINT_INDEX_PROXIMAL].distance_to(
+				joint_rotations[OpenXRInterface.HAND_JOINT_INDEX_INTERMEDIATE]
+			)+
+			joint_rotations[OpenXRInterface.HAND_JOINT_INDEX_INTERMEDIATE].distance_to(
+				joint_rotations[OpenXRInterface.HAND_JOINT_INDEX_DISTAL]
+			)+
+			joint_rotations[OpenXRInterface.HAND_JOINT_INDEX_DISTAL].distance_to(
+				joint_rotations[OpenXRInterface.HAND_JOINT_INDEX_TIP]
+			)
+		)/4.0
+		print(index)
+		if index < 30.0 and !index_pointing:
+			index_pointing = true
+		elif index > 60.0 and index_pointing:
+			play_sound()
+			index_pointing = false
+		
 	#check whether hand tracking data is available for the first time 
 	#	if it is, then setup the hand
 	if XRServer.primary_interface is OpenXRInterface and get_child_count(true)==0:
@@ -21,6 +55,8 @@ func _physics_process(delta):
 			if interface.get_hand_joint_flags(hand,child.name.to_int()) != 0:
 				child.target = interface.get_hand_joint_position(hand,child.name.to_int())
 				child.quaternion = interface.get_hand_joint_rotation(hand,child.name.to_int())
+				joint_positions[child.name.to_int()] = child.position
+				joint_rotations[child.name.to_int()] = child.rotation_degrees
 			#else:
 				#child.hide()
 
@@ -66,3 +102,11 @@ func setup_hand():
 				#	behaviors with the button positions
 				tmp.collon = false
 				tmp.add_child(tmpbutton)
+
+func play_sound(pitch_scale:float=1.0):
+	var tmpaudio = AudioStreamPlayer3D.new()
+	tmpaudio.stream = ui_boop
+	tmpaudio.pitch_scale=pitch_scale
+	add_child(tmpaudio)
+	tmpaudio.finished.connect(tmpaudio.queue_free)
+	tmpaudio.play()
