@@ -38,10 +38,11 @@ theme/default_font_multichannel_signed_distance_field=true
 
 textures/vram_compression/import_etc2_astc=true
 anti_aliasing/quality/screen_space_aa=1
-vrs/mode=2
 
 [xr]
 
 openxr/enabled=true
+openxr/foveation_level=3
+openxr/startup_alert=false
 openxr/extensions/eye_gaze_interaction=true
 shaders/enabled=true

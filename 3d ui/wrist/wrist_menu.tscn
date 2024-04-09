@@ -1,9 +1,11 @@
 [gd_scene load_steps=6 format=3 uid="uid://b6lc6k5xetr82"]
 
-[ext_resource type="AudioStream" uid="uid://dwggkyqxw5vse" path="res://ui boop.ogg" id="1_j7ug8"]
+[ext_resource type="AudioStream" uid="uid://b8gjuof68067b" path="res://ui boop.ogg" id="1_j7ug8"]
 
 [sub_resource type="GDScript" id="GDScript_tpys6"]
-script/source = "extends Node3D
+script/source = "## this is a superset of the button_3d_shapecast for use testing wrist
+## mounted buttons look at the torus button comments for more information
+extends Node3D
 
 @onready var mesh_instance_3d = $MeshInstance3D
 @onready var shape_cast_3d = $ShapeCast3D

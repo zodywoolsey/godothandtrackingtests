@@ -1,4 +1,4 @@
-[gd_scene load_steps=6 format=3 uid="uid://dy7qrlay3bedx"]
+[gd_scene load_steps=8 format=3 uid="uid://dy7qrlay3bedx"]
 
 [ext_resource type="AudioStream" uid="uid://b8gjuof68067b" path="res://ui boop.ogg" id="1_qngsd"]
 
@@ -15,12 +15,14 @@ var is_activated:bool=false
 @export var dist:float=.2
 
 func _ready():
-	slider_joint_3d
+	slider_joint_3d.set_param(SliderJoint3D.PARAM_LINEAR_LIMIT_UPPER, dist)
 
 func _physics_process(delta):
-	print(platform.position.y)
-	print(slider_joint_3d.get_param(SliderJoint3D.PARAM_LINEAR_LIMIT_UPPER))
-	if platform.position.y < slider_joint_3d.get_param(SliderJoint3D.PARAM_LINEAR_LIMIT_UPPER)/2.0:
+	#print(platform.position.y)
+	#print(slider_joint_3d.get_param(SliderJoint3D.PARAM_LINEAR_LIMIT_UPPER))
+	#print(slider_joint_3d.get_param(SliderJoint3D.PARAM_LINEAR_LIMIT_LOWER))
+	#print(slider_joint_3d.position)
+	if platform.position.y < dist/2.0:
 		if !is_activated:
 			activated.emit()
 			audio_stream_player_3d.play()
@@ -28,7 +30,7 @@ func _physics_process(delta):
 		else:
 			label_3d.text = \"pressed\"
 		is_activated = true
-	elif platform.position.y > slider_joint_3d.get_param(SliderJoint3D.PARAM_LINEAR_LIMIT_UPPER)/1.8:
+	elif platform.position.y > dist/1.8:
 		is_activated = false
 		label_3d.text = \"not pressed\"
 "
@@ -41,6 +43,10 @@ size = Vector3(0.2, 0.01, 0.2)
 [sub_resource type="BoxMesh" id="BoxMesh_7jr3g"]
 size = Vector3(0.2, 0.01, 0.2)
 
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_015uu"]
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_d6j2p"]
+
 [node name="PlatformButton" type="Node3D"]
 script = SubResource("GDScript_braek")
 
@@ -49,6 +55,8 @@ gravity_scale = 0.0
 freeze = true
 
 [node name="platform" type="RigidBody3D" parent="."]
+collision_layer = 3
+collision_mask = 3
 gravity_scale = 0.0
 can_sleep = false
 continuous_cd = true
@@ -66,7 +74,7 @@ mesh = SubResource("BoxMesh_7jr3g")
 transform = Transform3D(-4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 0, 0, 1, 0, 0, 0)
 node_a = NodePath("../root body")
 node_b = NodePath("../platform")
-linear_limit/upper_distance = 0.2
+linear_limit/upper_distance = 0.0
 linear_limit/lower_distance = 0.0
 
 [node name="Label3D" type="Label3D" parent="."]
@@ -77,3 +85,9 @@ font_size = 6
 [node name="AudioStreamPlayer3D" type="AudioStreamPlayer3D" parent="."]
 stream = ExtResource("1_qngsd")
 max_polyphony = 32
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+visible = false
+material_override = SubResource("StandardMaterial3D_015uu")
+transparency = 0.9
+mesh = SubResource("PlaneMesh_d6j2p")

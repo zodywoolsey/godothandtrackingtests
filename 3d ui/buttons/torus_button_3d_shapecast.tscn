@@ -1,40 +1,59 @@
 [gd_scene load_steps=6 format=3 uid="uid://dsx7exupuuppf"]
 
-[ext_resource type="AudioStream" uid="uid://dwggkyqxw5vse" path="res://ui boop.ogg" id="1_ybxqv"]
+[ext_resource type="AudioStream" uid="uid://b8gjuof68067b" path="res://ui boop.ogg" id="1_ybxqv"]
 
 [sub_resource type="GDScript" id="GDScript_tpys6"]
 resource_local_to_scene = true
 script/source = "extends Node3D
 
+#grab all the node references we need
 @onready var mesh_instance_3d = $MeshInstance3D
 @onready var shape_cast_3d = $ShapeCast3D
 @onready var shape_cast_3d_2 = $ShapeCast3D2
 @onready var audio_stream_player_3d = $AudioStreamPlayer3D
-@onready var label_3d = $Label3D
-var torus:TorusMesh
+
+#signal to use when the button is actually pressed
 signal activated
+
+var torus:TorusMesh
 var is_activated:bool=false
 var target:float = 0.0
 var oldtarget:float = 0.0
 
+#this needs to be a preload here to fix an issue where the sound isn't found by
+#	by the AudioStreamVorbis.read_from_file() function at runtime
+#	for some reason
+var ui_boop = preload(\"res://ui boop.ogg\")
+
+#configuration exports for the button
 @export var dist:float=0.05
 @export var activation_dist:float=0.025
 @export var steps:float=1.0
 
 func _ready():
+	#set the torus variable for easy access
 	torus = mesh_instance_3d.mesh
+	#set the torus inner_radius to the theoretical \"maximum\" value
 	torus.inner_radius = (abs(0.0-1.0)*.04)+.015
-	#shape_cast_3d.position = shape_cast_3d.target_position*-1.0
+	#set the shapecasts' target_position to use the export var dist
 	shape_cast_3d.target_position.y = dist
 	shape_cast_3d_2.target_position = shape_cast_3d.target_position
 
 func _physics_process(delta):
+	#each loop we reset target to the default position
 	target = dist
+	#if either of the shapecasts are colliding with something, we set the 
+	#	target value to be equal to it's distance from the local origin
 	if shape_cast_3d.is_colliding():
 		target = to_local(shape_cast_3d.get_collision_point(0)).z
+	#if the rear shapecast is colliding at a closer point than the front one,
+	#	we use it's value instead to ensure more accurate button clicks
 	if shape_cast_3d_2.is_colliding():
 		if abs(to_local(shape_cast_3d_2.get_collision_point(0)).z) < target:
 			target = abs(to_local(shape_cast_3d_2.get_collision_point(0)).z)
+	#remapping the target value to be between 0.0-1.0 from the 
+	#	max distance-activation distance and then clamp the value to prevent 
+	#	overdriving
 	target = clamp(
 		remap(
 			target,
@@ -46,38 +65,54 @@ func _physics_process(delta):
 		0.0,
 		1.0
 	)
+	#if the steps variable is set, then we multiply the target by the number of
+	#	steps and then round it up and then divide by steps to bring it back
+	#	into the correct value range. Since we remapped the value, we don't
+	#	have to worry about this calculation's accuracy for smaller buttons
 	if steps > 0:
 		target = ceil(target*(steps))/(steps)
-	if oldtarget != target:
-		var tmpaudio = AudioStreamPlayer3D.new()
-		var tmpstream = AudioStreamOggVorbis.new()
-		tmpstream = tmpstream.load_from_file(\"res://ui boop.ogg\")
-		tmpaudio.stream = tmpstream
-		add_child(tmpaudio)
-		tmpaudio.pitch_scale = remap(target,0.0,1.0,.75,1.0)
-		tmpaudio.finished.connect(tmpaudio.queue_free)
-		tmpaudio.play()
-		oldtarget = target
+		#check whether the button has moved steps since last loop
+		if oldtarget != target:
+			#create a new audio stream so we can change the pitch of the audio
+			#	so we can have multiple different pitches of the button sound
+			#	playing at the same time
+			var tmpaudio = AudioStreamPlayer3D.new()
+			tmpaudio.stream = ui_boop
+			add_child(tmpaudio)
+			tmpaudio.pitch_scale = remap(target,0.0,1.0,.75,1.0)
+			#delete the temporary AudioStreamPlayer3D once it's finished playing
+			#	it's sound
+			tmpaudio.finished.connect(tmpaudio.queue_free)
+			#play the button sound
+			tmpaudio.play()
+			#since the target value changed, we need to update the oldtarget for
+			#	use in the next loop iteration
+			oldtarget = target
+	#do essentially the same thing as the above but do it when the button is
+	#	actually activated to ensure some feedback upon actual activation
 	if target < activation_dist:
 		if !is_activated:
+			#emit the activated signal so the button pressed event is usable
 			activated.emit()
 			var tmpaudio = AudioStreamPlayer3D.new()
-			var tmpstream = AudioStreamOggVorbis.new()
-			tmpstream = tmpstream.load_from_file(\"res://ui boop.ogg\")
-			tmpaudio.stream = tmpstream
+			tmpaudio.stream = ui_boop
 			add_child(tmpaudio)
 			tmpaudio.pitch_scale = remap(target,0.0,1.0,.75,1.0)
 			tmpaudio.finished.connect(tmpaudio.queue_free)
 			tmpaudio.play()
-			label_3d.text = \"new press\"
-		else:
-			label_3d.text = \"pressed\"
+		#if the button is activated, set that var so it doesn't emit the signal
+		#	every frame the button is pressed
 		is_activated = true
+	#if button is no longer pressed then reset the activated variable. we use
+	#	a different distance for this to add some buffer area for the button to
+	#	to be resistant to hand jitter
 	elif target > activation_dist*1.4:
 		is_activated = false
-		label_3d.text = \"not pressed\"
+	#	commented out the code for moving the visual to the target position
 	#mesh_instance_3d.position.z = lerpf(mesh_instance_3d.position.z,target,.4)
+	#	commented out lerping the inner_radius for different visual feedback
 	#torus.inner_radius = lerpf(torus.inner_radius,(abs(target-1.0)*.04)+.005,.2)
+	#	lerp the outer_radius to provide visual feedback for the button
 	torus.outer_radius = lerpf(torus.outer_radius,(abs(target-1.0)*.04)+.015,.2)
 "
 
@@ -97,20 +132,6 @@ radius = 0.05
 [node name="TorusButton" type="Node3D"]
 script = SubResource("GDScript_tpys6")
 
-[node name="Label3D" type="Label3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0)
-visible = false
-text = "dist:"
-font_size = 12
-outline_size = 2
-
-[node name="Label3D2" type="Label3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0)
-text = "shapecast
-torus button"
-font_size = 6
-outline_size = 2
-
 [node name="MeshInstance3D" type="MeshInstance3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0)
 mesh = SubResource("TorusMesh_yi7j4")
@@ -119,13 +140,13 @@ mesh = SubResource("TorusMesh_yi7j4")
 transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0)
 shape = SubResource("CylinderShape3D_sflmq")
 target_position = Vector3(0, 0.1, 0)
-collision_mask = 2
+collision_mask = 48
 
 [node name="ShapeCast3D2" type="ShapeCast3D" parent="."]
 transform = Transform3D(-1, 0, -8.74228e-08, 8.74228e-08, -4.37114e-08, -1, -3.82137e-15, -1, 4.37114e-08, 0, 0, 0)
 shape = SubResource("CylinderShape3D_c1ngk")
 target_position = Vector3(0, 0.1, 0)
-collision_mask = 2
+collision_mask = 50
 
 [node name="AudioStreamPlayer3D" type="AudioStreamPlayer3D" parent="."]
 stream = ExtResource("1_ybxqv")
