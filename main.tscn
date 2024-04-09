@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3 uid="uid://jio7glq5myw4"]
+[gd_scene load_steps=16 format=3 uid="uid://jio7glq5myw4"]
 
 [ext_resource type="Script" path="res://main.gd" id="1_nqt6r"]
 [ext_resource type="Material" uid="uid://hechy6mkrg7w" path="res://addons/kenney_prototype_textures/triplanar/dark/dark_12.tres" id="3_f10yo"]
@@ -6,7 +6,9 @@
 [ext_resource type="PackedScene" uid="uid://dsx7exupuuppf" path="res://3d ui/buttons/torus_button_3d_shapecast.tscn" id="4_1pfqw"]
 [ext_resource type="PackedScene" uid="uid://c1s6wpkt1hxc" path="res://3d ui/buttons/button_3d_shapecast.tscn" id="6_ttlyc"]
 [ext_resource type="PackedScene" uid="uid://dy7qrlay3bedx" path="res://3d ui/buttons/platform button.tscn" id="7_3ajlk"]
+[ext_resource type="Script" path="res://addons/Panel3D/3dpanel.gd" id="8_ibk1e"]
 [ext_resource type="PackedScene" uid="uid://dextd68hni8kp" path="res://assets/maxwell.tscn" id="8_s14fe"]
+[ext_resource type="PackedScene" uid="uid://cn5uqdaq10qd" path="res://3d ui/panel3d/test panel ui.tscn" id="9_up8qh"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_5p2bf"]
 sky_horizon_color = Color(0.64625, 0.65575, 0.67075, 1)
@@ -122,9 +124,10 @@ script = SubResource("GDScript_hpwp3")
 [node name="PlatformButton" parent="." instance=ExtResource("7_3ajlk")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.458161, 1.6, -0.5)
 
-[node name="RigidBody3D" parent="." instance=ExtResource("8_s14fe")]
-transform = Transform3D(-4.37114e-08, 0, -1, 0, 1, 0, 1, 0, -4.37114e-08, 0.6, 1.5, 0)
-collision_layer = 3
-collision_mask = 3
+[node name="Panel3D" type="StaticBody3D" parent="."]
+transform = Transform3D(-4.37114e-08, 0, -1, 0, 1, 0, 1, 0, -4.37114e-08, 0.612666, 1.5, 0)
+script = ExtResource("8_ibk1e")
+_auto_load_ui = ExtResource("9_up8qh")
+transparent = false
 
 [editable path="Button3D4"]

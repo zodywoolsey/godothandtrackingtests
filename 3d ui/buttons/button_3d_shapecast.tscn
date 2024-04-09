@@ -3,9 +3,8 @@
 [ext_resource type="AudioStream" uid="uid://b8gjuof68067b" path="res://ui boop.ogg" id="1_y8j1p"]
 
 [sub_resource type="GDScript" id="GDScript_tpys6"]
-script/source = "## this is essentially an alternate version of a button
-## look at the comments in the torus button for information
-## on what this is doing.
+script/source = "## this is essentially an alternate version of a button look
+## at the comments in the torus button for more information
 extends Node3D
 
 @onready var mesh_instance_3d = $MeshInstance3D
@@ -46,7 +45,7 @@ func _physics_process(delta):
 			activated.emit()
 			audio_stream_player_3d.play()
 		is_activated = true
-	elif target > shape_cast_3d.target_position.z/1.8:
+	elif target > shape_cast_3d.target_position.z/1.4:
 		is_activated = false
 	mesh_instance_3d.position.z = lerpf(
 		mesh_instance_3d.position.z,

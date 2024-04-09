@@ -19,6 +19,10 @@ config/icon="res://icon.svg"
 
 window/subwindows/embed_subwindows=false
 
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/Panel3D/plugin.cfg")
+
 [gui]
 
 theme/default_font_multichannel_signed_distance_field=true
