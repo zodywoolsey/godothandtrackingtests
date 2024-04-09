@@ -1,7 +1,6 @@
-[gd_scene load_steps=7 format=3 uid="uid://b6lc6k5xetr82"]
+[gd_scene load_steps=6 format=3 uid="uid://b6lc6k5xetr82"]
 
-[ext_resource type="AudioStream" uid="uid://b8gjuof68067b" path="res://ui boop.ogg" id="1_j7ug8"]
-[ext_resource type="PackedScene" uid="uid://r3d6pc4pr3qg" path="res://rigid_body_3d.tscn" id="2_nf2sy"]
+[ext_resource type="AudioStream" uid="uid://dwggkyqxw5vse" path="res://ui boop.ogg" id="1_j7ug8"]
 
 [sub_resource type="GDScript" id="GDScript_tpys6"]
 script/source = "extends Node3D
@@ -49,7 +48,7 @@ func _physics_process(delta):
 			activated.emit()
 			audio_stream_player_3d.play()
 		is_activated = true
-	elif target > shape_cast_3d.target_position.z/1.8:
+	elif target > shape_cast_3d.target_position.z/1.2:
 		is_activated = false
 	mesh_instance_3d.position.z = lerpf(
 		mesh_instance_3d.position.z,
@@ -59,7 +58,7 @@ func _physics_process(delta):
 "
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_x02lx"]
-size = Vector3(0.02, 0.02, 0.01)
+size = Vector3(0.05, 0.05, 0.01)
 
 [sub_resource type="BoxMesh" id="BoxMesh_i5xwf"]
 size = Vector3(0.02, 0.02, 0.01)
@@ -74,22 +73,17 @@ var state := 0;
 
 func _ready():
 	button_3d.activated.connect(func():
-		match state:
-			0:
-				state = 1
-				rigid_body_3d.global_gravity = -.1
-			1:
-				state = 2
-				rigid_body_3d.global_gravity = 0.0
-			2:
-				state = 0
-				rigid_body_3d.global_gravity = .1
+		var tmp = load(\"res://assets/maxwell.tscn\").instantiate()
+		get_tree().root.add_child(tmp)
+		tmp.scale *= .5
+		tmp.global_position = global_position
 		)
 "
 
 [node name="Button3D" type="Node3D"]
-transform = Transform3D(-1, -8.74228e-08, 3.82137e-15, 0, -4.37114e-08, -1, 8.74228e-08, -1, 4.37114e-08, 0, -0.0293879, 0)
+transform = Transform3D(-1, -8.74228e-08, 3.82137e-15, 0, -4.37114e-08, -1, 8.74228e-08, -1, 4.37114e-08, 0, -0.0188501, 0.0709449)
 script = SubResource("GDScript_tpys6")
+dist = 0.01
 
 [node name="Label3D" type="Label3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0)
@@ -110,11 +104,6 @@ mesh = SubResource("BoxMesh_i5xwf")
 stream = ExtResource("1_j7ug8")
 max_polyphony = 32
 
-[node name="iterate gravity" type="Node3D" parent="."]
+[node name="spawn a thing" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 0)
 script = SubResource("GDScript_6wwhq")
-
-[node name="RigidBody3D" parent="iterate gravity" instance=ExtResource("2_nf2sy")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.3, -1.65979, 0.568858)
-visible = false
-freeze = true

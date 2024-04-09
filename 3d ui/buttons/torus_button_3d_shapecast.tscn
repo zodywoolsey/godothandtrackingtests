@@ -1,8 +1,9 @@
 [gd_scene load_steps=6 format=3 uid="uid://dsx7exupuuppf"]
 
-[ext_resource type="AudioStream" uid="uid://b8gjuof68067b" path="res://ui boop.ogg" id="1_ybxqv"]
+[ext_resource type="AudioStream" uid="uid://dwggkyqxw5vse" path="res://ui boop.ogg" id="1_ybxqv"]
 
 [sub_resource type="GDScript" id="GDScript_tpys6"]
+resource_local_to_scene = true
 script/source = "extends Node3D
 
 @onready var mesh_instance_3d = $MeshInstance3D
@@ -16,28 +17,29 @@ var is_activated:bool=false
 var target:float = 0.0
 var oldtarget:float = 0.0
 
-@export var dist:float=0.025
+@export var dist:float=0.05
+@export var activation_dist:float=0.025
 @export var steps:float=1.0
 
 func _ready():
 	torus = mesh_instance_3d.mesh
+	torus.inner_radius = (abs(0.0-1.0)*.04)+.015
 	#shape_cast_3d.position = shape_cast_3d.target_position*-1.0
-	shape_cast_3d.target_position.y = dist*2.0
+	shape_cast_3d.target_position.y = dist
 	shape_cast_3d_2.target_position = shape_cast_3d.target_position
 
 func _physics_process(delta):
-	target = shape_cast_3d.target_position.y
+	target = dist
 	if shape_cast_3d.is_colliding():
 		target = to_local(shape_cast_3d.get_collision_point(0)).z
 	if shape_cast_3d_2.is_colliding():
 		if abs(to_local(shape_cast_3d_2.get_collision_point(0)).z) < target:
 			target = abs(to_local(shape_cast_3d_2.get_collision_point(0)).z)
-	print(target)
 	target = clamp(
 		remap(
 			target,
-			shape_cast_3d.target_position.y,
-			shape_cast_3d.target_position.y/2.0,
+			dist,
+			dist/2.0,
 			1.0,
 			0.0
 		),
@@ -47,29 +49,40 @@ func _physics_process(delta):
 	if steps > 0:
 		target = ceil(target*(steps))/(steps)
 	if oldtarget != target:
-		print(oldtarget)
-		print(target)
-		print('newtarget')
-		audio_stream_player_3d.play()
+		var tmpaudio = AudioStreamPlayer3D.new()
+		var tmpstream = AudioStreamOggVorbis.new()
+		tmpstream = tmpstream.load_from_file(\"res://ui boop.ogg\")
+		tmpaudio.stream = tmpstream
+		add_child(tmpaudio)
+		tmpaudio.pitch_scale = remap(target,0.0,1.0,.75,1.0)
+		tmpaudio.finished.connect(tmpaudio.queue_free)
+		tmpaudio.play()
 		oldtarget = target
-	if target < shape_cast_3d.target_position.y/2.0:
+	if target < activation_dist:
 		if !is_activated:
 			activated.emit()
-			audio_stream_player_3d.play()
+			var tmpaudio = AudioStreamPlayer3D.new()
+			var tmpstream = AudioStreamOggVorbis.new()
+			tmpstream = tmpstream.load_from_file(\"res://ui boop.ogg\")
+			tmpaudio.stream = tmpstream
+			add_child(tmpaudio)
+			tmpaudio.pitch_scale = remap(target,0.0,1.0,.75,1.0)
+			tmpaudio.finished.connect(tmpaudio.queue_free)
+			tmpaudio.play()
 			label_3d.text = \"new press\"
 		else:
 			label_3d.text = \"pressed\"
 		is_activated = true
-	elif target > shape_cast_3d.target_position.y/1.8:
+	elif target > activation_dist*1.4:
 		is_activated = false
 		label_3d.text = \"not pressed\"
 	#mesh_instance_3d.position.z = lerpf(mesh_instance_3d.position.z,target,.4)
-	torus.inner_radius = lerpf(torus.inner_radius,(target*.04)+.005,.2)
-	torus.outer_radius = lerpf(torus.outer_radius,(target*.04)+.015,.2)
-	audio_stream_player_3d.pitch_scale = remap(target,0.0,1.0,.75,1.0)
+	#torus.inner_radius = lerpf(torus.inner_radius,(abs(target-1.0)*.04)+.005,.2)
+	torus.outer_radius = lerpf(torus.outer_radius,(abs(target-1.0)*.04)+.015,.2)
 "
 
 [sub_resource type="TorusMesh" id="TorusMesh_yi7j4"]
+resource_local_to_scene = true
 inner_radius = 0.045
 outer_radius = 0.055
 
@@ -101,7 +114,6 @@ outline_size = 2
 [node name="MeshInstance3D" type="MeshInstance3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0)
 mesh = SubResource("TorusMesh_yi7j4")
-skeleton = NodePath("")
 
 [node name="ShapeCast3D" type="ShapeCast3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0)

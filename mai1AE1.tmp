@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3 uid="uid://jio7glq5myw4"]
+[gd_scene load_steps=13 format=3 uid="uid://jio7glq5myw4"]
 
 [ext_resource type="Script" path="res://main.gd" id="1_nqt6r"]
 [ext_resource type="Material" uid="uid://hechy6mkrg7w" path="res://addons/kenney_prototype_textures/triplanar/dark/dark_12.tres" id="3_f10yo"]
@@ -6,7 +6,7 @@
 [ext_resource type="PackedScene" uid="uid://dsx7exupuuppf" path="res://3d ui/buttons/torus_button_3d_shapecast.tscn" id="4_1pfqw"]
 [ext_resource type="PackedScene" uid="uid://c1s6wpkt1hxc" path="res://3d ui/buttons/button_3d_shapecast.tscn" id="6_ttlyc"]
 [ext_resource type="PackedScene" uid="uid://dy7qrlay3bedx" path="res://3d ui/buttons/platform button.tscn" id="7_3ajlk"]
-[ext_resource type="PackedScene" uid="uid://dextd68hni8kp" path="res://assets/maxwell.tscn" id="8_s14fe"]
+[ext_resource type="PackedScene" uid="uid://r3d6pc4pr3qg" path="res://rigid_body_3d.tscn" id="8_3kakt"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_5p2bf"]
 sky_horizon_color = Color(0.64625, 0.65575, 0.67075, 1)
@@ -32,16 +32,11 @@ script/source = "extends Node3D
 
 func _ready():
 	button_3d.activated.connect(func():
-		var tmp = load('res://assets/maxwell.tscn').instantiate()
+		var tmp = load('res://rigid_body_3d.tscn').instantiate()
 		add_child(tmp)
 		tmp.position = Vector3()
 		)
 "
-
-[sub_resource type="TorusMesh" id="TorusMesh_3puyh"]
-resource_local_to_scene = true
-inner_radius = 0.045
-outer_radius = 0.055
 
 [sub_resource type="GDScript" id="GDScript_hpwp3"]
 script/source = "extends Node3D
@@ -96,24 +91,10 @@ size = Vector3(10, 1, 10)
 
 [node name="Button3D2" parent="." instance=ExtResource("4_1pfqw")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.1, 1.65979, -0.568858)
-dist = 0.1
-activation_dist = 0.05
 
 [node name="spawn box" type="Node3D" parent="Button3D2"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.4, 0, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 0)
 script = SubResource("GDScript_cs4mm")
-
-[node name="Button3D4" parent="." instance=ExtResource("4_1pfqw")]
-transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, -0.5, 1.65979, -0.168858)
-dist = 0.2
-activation_dist = 0.0
-steps = 4.0
-
-[node name="Label3D2" parent="Button3D4" index="1"]
-visible = false
-
-[node name="MeshInstance3D" parent="Button3D4" index="2"]
-mesh = SubResource("TorusMesh_3puyh")
 
 [node name="Button3D3" parent="." instance=ExtResource("6_ttlyc")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.2, 1.65979, -0.568858)
@@ -123,14 +104,10 @@ staticlabeltext = "gravity iterator"
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 0)
 script = SubResource("GDScript_hpwp3")
 
-[node name="RigidBody3D" parent="Button3D3" instance=ExtResource("8_s14fe")]
+[node name="RigidBody3D" parent="Button3D3" instance=ExtResource("8_3kakt")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.3, -1.65979, 0.568858)
+visible = false
+freeze = true
 
 [node name="PlatformButton" parent="." instance=ExtResource("7_3ajlk")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.458161, 1.6, -0.5)
-
-[node name="RigidBody3D" parent="." instance=ExtResource("8_s14fe")]
-transform = Transform3D(-4.37114e-08, 0, -1, 0, 1, 0, 1, 0, -4.37114e-08, 0.6, 1.5, 0)
-collision_layer = 3
-collision_mask = 3
-
-[editable path="Button3D4"]

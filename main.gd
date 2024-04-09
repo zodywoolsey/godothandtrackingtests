@@ -1,7 +1,7 @@
 extends Node3D
 
 @onready var xr_origin_3d = $XROrigin3D
-var tracker_scene = preload("res://tracker.tscn")
+@onready var world_environment = $WorldEnvironment
 
 func _ready():
 	for interface in XRServer.get_interfaces():
@@ -13,3 +13,5 @@ func _ready():
 			if XRServer.get_interface(interface.id).is_passthrough_supported():
 				get_viewport().transparent_bg = true
 				print(XRServer.get_interface(interface.id).start_passthrough())
+				world_environment.environment.background_mode = 0
+
