@@ -1,6 +1,6 @@
 [gd_scene load_steps=6 format=3 uid="uid://dsx7exupuuppf"]
 
-[ext_resource type="AudioStream" uid="uid://b8gjuof68067b" path="res://ui boop.ogg" id="1_ybxqv"]
+[ext_resource type="AudioStream" uid="uid://dwggkyqxw5vse" path="res://ui boop.ogg" id="1_ybxqv"]
 
 [sub_resource type="GDScript" id="GDScript_tpys6"]
 resource_local_to_scene = true

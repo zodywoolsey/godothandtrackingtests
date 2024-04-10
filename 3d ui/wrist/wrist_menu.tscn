@@ -1,6 +1,6 @@
 [gd_scene load_steps=6 format=3 uid="uid://b6lc6k5xetr82"]
 
-[ext_resource type="AudioStream" uid="uid://b8gjuof68067b" path="res://ui boop.ogg" id="1_j7ug8"]
+[ext_resource type="AudioStream" uid="uid://dwggkyqxw5vse" path="res://ui boop.ogg" id="1_j7ug8"]
 
 [sub_resource type="GDScript" id="GDScript_tpys6"]
 script/source = "## this is a superset of the button_3d_shapecast for use testing wrist
