@@ -23,12 +23,12 @@ func init_xr():
 			#	refresh rate to keep the physics in sync with the device data
 			Engine.physics_ticks_per_second = XRServer.get_interface(interface.id).display_refresh_rate
 			# check to see if passthrough is supported
-			#if XRServer.get_interface(interface.id).is_passthrough_supported():
-				## if it is, then we set the viewport to be transparent
-				#get_viewport().transparent_bg = true
-				## start passthrough
-				#print(XRServer.get_interface(interface.id).start_passthrough())
-				## set the world environment background to clear color
-				##	so that it doesn't blend the sky shader with the passthrough
-				#world_environment.environment.background_mode = 0
+			if XRServer.get_interface(interface.id).is_passthrough_supported():
+				# if it is, then we set the viewport to be transparent
+				get_viewport().transparent_bg = true
+				# start passthrough
+				print(XRServer.get_interface(interface.id).start_passthrough())
+				# set the world environment background to clear color
+				#	so that it doesn't blend the sky shader with the passthrough
+				world_environment.environment.background_mode = 0
 

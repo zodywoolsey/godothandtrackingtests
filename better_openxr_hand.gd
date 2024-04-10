@@ -41,11 +41,18 @@ func _physics_process(delta):
 			setup_hand()
 	for child:Node3D in get_children():
 		if "target" in child:
-			if interface.get_hand_joint_flags(hand,child.name.to_int()) != 0:
-				child.target = interface.get_hand_joint_position(hand,child.name.to_int())
-				child.quaternion = interface.get_hand_joint_rotation(hand,child.name.to_int())
-				joint_positions[child.name.to_int()] = child.position
-				joint_rotations[child.name.to_int()] = child.rotation_degrees
+			var num:int=child.name.to_int()
+			if interface.get_hand_joint_flags(hand,num) != 0:
+				child.target = interface.get_hand_joint_position(hand,num)
+				child.quaternion = interface.get_hand_joint_rotation(hand,num)
+				joint_positions[num] = child.position
+				joint_rotations[num] = child.rotation_degrees
+				if num == 0:
+					child.find_child("label").text = str(joint_rotations[num])
+					if joint_rotations[num].z < 45.0 and joint_rotations[num].x < 45.0:
+						child.visible = true
+					elif child.visible and joint_rotations[num].z > 60.0 and joint_rotations[num].x > 60.0:
+						child.visible = false
 			#else:
 				#child.hide()
 
@@ -53,7 +60,7 @@ func _physics_process(delta):
 func setup_hand():
 	for i in range(26):
 		#instantiate a tracker to place at this joint
-		var tmp = load("res://tracker.tscn").instantiate()
+		var tmp:Node3D = load("res://tracker.tscn").instantiate()
 		#name the tracker by the int value of the hand joint for correlation
 		tmp.name = str(i)
 		#if left hand, add the left hand collision layer for using ui
@@ -68,18 +75,17 @@ func setup_hand():
 		add_child(tmp)
 		#if a specific join, do something special
 		match i:
-			#palm joint - add the grab area (this will be used for a grabbing 
-			#	system that ins't purely physics based to make it easier to move
-			#	objects around
+			#palm joint
 			0:
-				var tmparea = Area3D.new()
-				var tmpshape = CollisionShape3D.new()
-				tmpshape.shape = SphereShape3D.new()
-				tmpshape.shape.radius = .1
-				tmparea.add_child(tmpshape)
-				tmp.add_child(tmparea)
-				tmparea.position.y = -.1
-				tmparea.position.z = -.05
+				var label:Label3D = Label3D.new()
+				label.text = "TEST"
+				tmp.add_child(label)
+				label.name = "label"
+				label.position.y = -.1
+				label.billboard = BaseMaterial3D.BILLBOARD_FIXED_Y
+				label.fixed_size = true
+				label.font_size = 2
+				print(label)
 			#wrist joint - add the wrist menu to the wrist joint
 			#	the wrist menu already has offsets configured in it's scene 
 			#	to position it better, but I might move that offset here so it
@@ -95,18 +101,22 @@ func setup_hand():
 func index_finger()->float:
 	var finger := (
 		joint_rotations[OpenXRInterface.HAND_JOINT_INDEX_METACARPAL].distance_to(
-			joint_rotations[OpenXRInterface.HAND_JOINT_INDEX_PROXIMAL]
-		)+
-		joint_rotations[OpenXRInterface.HAND_JOINT_INDEX_PROXIMAL].distance_to(
-			joint_rotations[OpenXRInterface.HAND_JOINT_INDEX_INTERMEDIATE]
-		)+
-		joint_rotations[OpenXRInterface.HAND_JOINT_INDEX_INTERMEDIATE].distance_to(
-			joint_rotations[OpenXRInterface.HAND_JOINT_INDEX_DISTAL]
-		)+
-		joint_rotations[OpenXRInterface.HAND_JOINT_INDEX_DISTAL].distance_to(
 			joint_rotations[OpenXRInterface.HAND_JOINT_INDEX_TIP]
 		)
-	)/4.0
+		)
+		#joint_rotations[OpenXRInterface.HAND_JOINT_INDEX_METACARPAL].distance_to(
+			#joint_rotations[OpenXRInterface.HAND_JOINT_INDEX_PROXIMAL]
+		#)+
+		#joint_rotations[OpenXRInterface.HAND_JOINT_INDEX_PROXIMAL].distance_to(
+			#joint_rotations[OpenXRInterface.HAND_JOINT_INDEX_INTERMEDIATE]
+		#)+
+		#joint_rotations[OpenXRInterface.HAND_JOINT_INDEX_INTERMEDIATE].distance_to(
+			#joint_rotations[OpenXRInterface.HAND_JOINT_INDEX_DISTAL]
+		#)+
+		#joint_rotations[OpenXRInterface.HAND_JOINT_INDEX_DISTAL].distance_to(
+			#joint_rotations[OpenXRInterface.HAND_JOINT_INDEX_TIP]
+		#)
+	#)/4.0
 	if finger < finger_activation_distance and !index_pointing:
 		index_pointing = true
 	elif finger > finger_activation_distance and index_pointing:
@@ -117,18 +127,22 @@ func index_finger()->float:
 func middle_finger()->float:
 	var finger := (
 		joint_rotations[OpenXRInterface.HAND_JOINT_MIDDLE_METACARPAL].distance_to(
-			joint_rotations[OpenXRInterface.HAND_JOINT_MIDDLE_PROXIMAL]
-		)+
-		joint_rotations[OpenXRInterface.HAND_JOINT_MIDDLE_PROXIMAL].distance_to(
-			joint_rotations[OpenXRInterface.HAND_JOINT_MIDDLE_INTERMEDIATE]
-		)+
-		joint_rotations[OpenXRInterface.HAND_JOINT_MIDDLE_INTERMEDIATE].distance_to(
-			joint_rotations[OpenXRInterface.HAND_JOINT_MIDDLE_DISTAL]
-		)+
-		joint_rotations[OpenXRInterface.HAND_JOINT_MIDDLE_DISTAL].distance_to(
 			joint_rotations[OpenXRInterface.HAND_JOINT_MIDDLE_TIP]
 		)
-	)/4.0
+		)
+		#joint_rotations[OpenXRInterface.HAND_JOINT_MIDDLE_METACARPAL].distance_to(
+			#joint_rotations[OpenXRInterface.HAND_JOINT_MIDDLE_PROXIMAL]
+		#)+
+		#joint_rotations[OpenXRInterface.HAND_JOINT_MIDDLE_PROXIMAL].distance_to(
+			#joint_rotations[OpenXRInterface.HAND_JOINT_MIDDLE_INTERMEDIATE]
+		#)+
+		#joint_rotations[OpenXRInterface.HAND_JOINT_MIDDLE_INTERMEDIATE].distance_to(
+			#joint_rotations[OpenXRInterface.HAND_JOINT_MIDDLE_DISTAL]
+		#)+
+		#joint_rotations[OpenXRInterface.HAND_JOINT_MIDDLE_DISTAL].distance_to(
+			#joint_rotations[OpenXRInterface.HAND_JOINT_MIDDLE_TIP]
+		#)
+	#)/4.0
 	if finger < finger_activation_distance and !middle_pointing:
 		middle_pointing = true
 	elif finger > finger_activation_distance and middle_pointing:
@@ -139,18 +153,22 @@ func middle_finger()->float:
 func ring_finger()->float:
 	var finger := (
 		joint_rotations[OpenXRInterface.HAND_JOINT_RING_METACARPAL].distance_to(
-			joint_rotations[OpenXRInterface.HAND_JOINT_RING_PROXIMAL]
-		)+
-		joint_rotations[OpenXRInterface.HAND_JOINT_RING_PROXIMAL].distance_to(
-			joint_rotations[OpenXRInterface.HAND_JOINT_RING_INTERMEDIATE]
-		)+
-		joint_rotations[OpenXRInterface.HAND_JOINT_RING_INTERMEDIATE].distance_to(
-			joint_rotations[OpenXRInterface.HAND_JOINT_RING_DISTAL]
-		)+
-		joint_rotations[OpenXRInterface.HAND_JOINT_RING_DISTAL].distance_to(
 			joint_rotations[OpenXRInterface.HAND_JOINT_RING_TIP]
 		)
-	)/4.0
+		)
+		#joint_rotations[OpenXRInterface.HAND_JOINT_RING_METACARPAL].distance_to(
+			#joint_rotations[OpenXRInterface.HAND_JOINT_RING_PROXIMAL]
+		#)+
+		#joint_rotations[OpenXRInterface.HAND_JOINT_RING_PROXIMAL].distance_to(
+			#joint_rotations[OpenXRInterface.HAND_JOINT_RING_INTERMEDIATE]
+		#)+
+		#joint_rotations[OpenXRInterface.HAND_JOINT_RING_INTERMEDIATE].distance_to(
+			#joint_rotations[OpenXRInterface.HAND_JOINT_RING_DISTAL]
+		#)+
+		#joint_rotations[OpenXRInterface.HAND_JOINT_RING_DISTAL].distance_to(
+			#joint_rotations[OpenXRInterface.HAND_JOINT_RING_TIP]
+		#)
+	#)/4.0
 	if finger < finger_activation_distance and !ring_pointing:
 		ring_pointing = true
 	elif finger > finger_activation_distance and ring_pointing:
@@ -161,18 +179,22 @@ func ring_finger()->float:
 func little_finger()->float:
 	var finger := (
 		joint_rotations[OpenXRInterface.HAND_JOINT_LITTLE_METACARPAL].distance_to(
-			joint_rotations[OpenXRInterface.HAND_JOINT_LITTLE_PROXIMAL]
-		)+
-		joint_rotations[OpenXRInterface.HAND_JOINT_LITTLE_PROXIMAL].distance_to(
-			joint_rotations[OpenXRInterface.HAND_JOINT_LITTLE_INTERMEDIATE]
-		)+
-		joint_rotations[OpenXRInterface.HAND_JOINT_LITTLE_INTERMEDIATE].distance_to(
-			joint_rotations[OpenXRInterface.HAND_JOINT_LITTLE_DISTAL]
-		)+
-		joint_rotations[OpenXRInterface.HAND_JOINT_LITTLE_DISTAL].distance_to(
 			joint_rotations[OpenXRInterface.HAND_JOINT_LITTLE_TIP]
 		)
-	)/4.0
+		)
+		#joint_rotations[OpenXRInterface.HAND_JOINT_LITTLE_METACARPAL].distance_to(
+			#joint_rotations[OpenXRInterface.HAND_JOINT_LITTLE_PROXIMAL]
+		#)+
+		#joint_rotations[OpenXRInterface.HAND_JOINT_LITTLE_PROXIMAL].distance_to(
+			#joint_rotations[OpenXRInterface.HAND_JOINT_LITTLE_INTERMEDIATE]
+		#)+
+		#joint_rotations[OpenXRInterface.HAND_JOINT_LITTLE_INTERMEDIATE].distance_to(
+			#joint_rotations[OpenXRInterface.HAND_JOINT_LITTLE_DISTAL]
+		#)+
+		#joint_rotations[OpenXRInterface.HAND_JOINT_LITTLE_DISTAL].distance_to(
+			#joint_rotations[OpenXRInterface.HAND_JOINT_LITTLE_TIP]
+		#)
+	#)/4.0
 	if finger < finger_activation_distance and !little_pointing:
 		little_pointing = true
 	elif finger > finger_activation_distance and little_pointing:
@@ -183,15 +205,19 @@ func little_finger()->float:
 func thumb_finger()->float:
 	var finger := (
 		joint_rotations[OpenXRInterface.HAND_JOINT_THUMB_METACARPAL].distance_to(
-			joint_rotations[OpenXRInterface.HAND_JOINT_THUMB_PROXIMAL]
-		)+
-		joint_rotations[OpenXRInterface.HAND_JOINT_THUMB_PROXIMAL].distance_to(
-			joint_rotations[OpenXRInterface.HAND_JOINT_THUMB_DISTAL]
-		)+
-		joint_rotations[OpenXRInterface.HAND_JOINT_THUMB_DISTAL].distance_to(
 			joint_rotations[OpenXRInterface.HAND_JOINT_THUMB_TIP]
 		)
-	)/4.0
+		#joint_rotations[OpenXRInterface.HAND_JOINT_THUMB_METACARPAL].distance_to(
+			#joint_rotations[OpenXRInterface.HAND_JOINT_THUMB_PROXIMAL]
+		#)+
+		#joint_rotations[OpenXRInterface.HAND_JOINT_THUMB_PROXIMAL].distance_to(
+			#joint_rotations[OpenXRInterface.HAND_JOINT_THUMB_DISTAL]
+		#)+
+		#joint_rotations[OpenXRInterface.HAND_JOINT_THUMB_DISTAL].distance_to(
+			#joint_rotations[OpenXRInterface.HAND_JOINT_THUMB_TIP]
+		#)
+	)
+	#)/4.0
 	if finger < finger_activation_distance and !thumb_pointing:
 		thumb_pointing = true
 	elif finger > finger_activation_distance and thumb_pointing:
