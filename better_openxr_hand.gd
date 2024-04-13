@@ -81,6 +81,7 @@ func setup_hand():
 	for i in range(26):
 		#instantiate a tracker to place at this joint
 		var tmp:Node3D = load("res://tracker.tscn").instantiate()
+		var tmp:Node3D = load("res://tracker.tscn").instantiate()
 		#name the tracker by the int value of the hand joint for correlation
 		tmp.name = str(i)
 		#if left hand, add the left hand collision layer for using ui
@@ -95,6 +96,7 @@ func setup_hand():
 		add_child(tmp)
 		#if a specific join, do something special
 		match i:
+			#palm joint
 			#palm joint
 			0:
 				var label:Label3D = Label3D.new()
