@@ -111,9 +111,9 @@ func _physics_process(delta):
 	#	commented out the code for moving the visual to the target position
 	#mesh_instance_3d.position.z = lerpf(mesh_instance_3d.position.z,target,.4)
 	#	commented out lerping the inner_radius for different visual feedback
-	#torus.inner_radius = lerpf(torus.inner_radius,(abs(target-1.0)*.04)+.005,.2)
+	torus.inner_radius = lerpf(torus.inner_radius,(abs(target)*.04)+.005,.2)
 	#	lerp the outer_radius to provide visual feedback for the button
-	torus.outer_radius = lerpf(torus.outer_radius,(abs(target-1.0)*.04)+.015,.2)
+	#torus.outer_radius = lerpf(torus.outer_radius,(abs(target-1.0)*.04)+.015,.2)
 "
 
 [sub_resource type="TorusMesh" id="TorusMesh_yi7j4"]

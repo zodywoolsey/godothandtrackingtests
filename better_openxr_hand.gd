@@ -11,6 +11,7 @@ var interface:OpenXRInterface
 #track the last position and rotation of the of each joint for gesture detection
 var joint_positions:Array[Vector3]
 var joint_rotations:Array[Vector3]
+var joints:Array[Node3D]
 
 #preload the ui sound
 var ui_boop = preload("res://ui boop.ogg")
@@ -18,6 +19,7 @@ var ui_boop = preload("res://ui boop.ogg")
 func _ready():
 	joint_positions.resize(26)
 	joint_rotations.resize(26)
+	joints.resize(26)
 
 var index_pointing := false
 var index_cumulative_angle : float = 0.0
@@ -38,16 +40,16 @@ var thumb_closedness : float = 0.0
 var finger_activation_distance:float=40.0
 
 func _physics_process(delta):
-	index_cumulative_angle = index_finger()
-	middle_cumulative_angle = middle_finger()
-	ring_cumulative_angle = ring_finger()
-	little_cumulative_angle = little_finger()
-	thumb_cumulative_angle = thumb_finger()
-	index_closedness = (remap(index_cumulative_angle,0.0,180.0,0.0,1.0))
-	middle_closedness = (remap(middle_cumulative_angle,0.0,180.0,0.0,1.0))
-	ring_closedness = (remap(ring_cumulative_angle,0.0,180.0,0.0,1.0))
-	little_closedness = (remap(little_cumulative_angle,0.0,180.0,0.0,1.0))
-	thumb_closedness = (remap(thumb_cumulative_angle,0.0,100.0,0.0,1.0))
+	if joints[OpenXRInterface.HAND_JOINT_INDEX_INTERMEDIATE] and joints[OpenXRInterface.HAND_JOINT_INDEX_METACARPAL]:
+		index_closedness = joints[OpenXRInterface.HAND_JOINT_INDEX_METACARPAL].quaternion.dot(joints[OpenXRInterface.HAND_JOINT_INDEX_INTERMEDIATE].quaternion)
+	if joints[OpenXRInterface.HAND_JOINT_MIDDLE_INTERMEDIATE] and joints[OpenXRInterface.HAND_JOINT_MIDDLE_METACARPAL]:
+		middle_closedness = joints[OpenXRInterface.HAND_JOINT_MIDDLE_METACARPAL].quaternion.dot(joints[OpenXRInterface.HAND_JOINT_MIDDLE_INTERMEDIATE].quaternion)
+	if joints[OpenXRInterface.HAND_JOINT_RING_INTERMEDIATE] and joints[OpenXRInterface.HAND_JOINT_RING_METACARPAL]:
+		ring_closedness = joints[OpenXRInterface.HAND_JOINT_RING_METACARPAL].quaternion.dot(joints[OpenXRInterface.HAND_JOINT_RING_INTERMEDIATE].quaternion)
+	if joints[OpenXRInterface.HAND_JOINT_LITTLE_INTERMEDIATE] and joints[OpenXRInterface.HAND_JOINT_LITTLE_METACARPAL]:
+		little_closedness = joints[OpenXRInterface.HAND_JOINT_LITTLE_METACARPAL].quaternion.dot(joints[OpenXRInterface.HAND_JOINT_LITTLE_INTERMEDIATE].quaternion)
+	if joints[OpenXRInterface.HAND_JOINT_THUMB_TIP] and joints[OpenXRInterface.HAND_JOINT_THUMB_METACARPAL]:
+		thumb_closedness = joints[OpenXRInterface.HAND_JOINT_THUMB_METACARPAL].quaternion.dot(joints[OpenXRInterface.HAND_JOINT_THUMB_TIP].quaternion)
 	#check whether hand tracking data is available for the first time 
 	#	if it is, then setup the hand
 	if XRServer.primary_interface is OpenXRInterface and get_child_count(true)==0:
@@ -58,6 +60,9 @@ func _physics_process(delta):
 		if "target" in child:
 			var num:int=child.name.to_int()
 			if interface.get_hand_joint_flags(hand,num) != 0:
+				child.show()
+				child.collon = true
+				child.scale = Vector3(1,1,1)
 				child.target = interface.get_hand_joint_position(hand,num)
 				child.quaternion = interface.get_hand_joint_rotation(hand,num)
 				joint_positions[num] = child.target
@@ -73,15 +78,18 @@ func _physics_process(delta):
 						child.visible = true
 					elif child.visible and abs(joint_rotations[num].z) < 100.0:
 						child.visible = false
-			#else:
-				#child.hide()
+			else:
+				child.collon = false
+				child.hide()
+				child.scale = Vector3()
 
 ## setup the hand procedurally based on the 26 known hand joints
 func setup_hand():
 	for i in range(26):
 		#instantiate a tracker to place at this joint
 		var tmp:Node3D = load("res://tracker.tscn").instantiate()
-		var tmp:Node3D = load("res://tracker.tscn").instantiate()
+		#add the joint to the list of joints for easy access
+		joints[i] = tmp
 		#name the tracker by the int value of the hand joint for correlation
 		tmp.name = str(i)
 		#if left hand, add the left hand collision layer for using ui
@@ -119,133 +127,6 @@ func setup_hand():
 				#	behaviors with the button positions
 				tmp.collon = false
 				tmp.add_child(tmpbutton)
-
-func index_finger()->float:
-	var finger := (
-		joint_rotations[OpenXRInterface.HAND_JOINT_INDEX_METACARPAL].distance_to(
-			joint_rotations[OpenXRInterface.HAND_JOINT_INDEX_INTERMEDIATE]
-		)
-		)
-		#joint_rotations[OpenXRInterface.HAND_JOINT_INDEX_METACARPAL].distance_to(
-			#joint_rotations[OpenXRInterface.HAND_JOINT_INDEX_PROXIMAL]
-		#)+
-		#joint_rotations[OpenXRInterface.HAND_JOINT_INDEX_PROXIMAL].distance_to(
-			#joint_rotations[OpenXRInterface.HAND_JOINT_INDEX_INTERMEDIATE]
-		#)+
-		#joint_rotations[OpenXRInterface.HAND_JOINT_INDEX_INTERMEDIATE].distance_to(
-			#joint_rotations[OpenXRInterface.HAND_JOINT_INDEX_DISTAL]
-		#)+
-		#joint_rotations[OpenXRInterface.HAND_JOINT_INDEX_DISTAL].distance_to(
-			#joint_rotations[OpenXRInterface.HAND_JOINT_INDEX_TIP]
-		#)
-	#)/4.0
-	if finger < finger_activation_distance and !index_pointing:
-		index_pointing = true
-	elif finger > finger_activation_distance and index_pointing:
-		play_sound()
-		index_pointing = false
-	return finger
-
-func middle_finger()->float:
-	var finger := (
-		joint_rotations[OpenXRInterface.HAND_JOINT_MIDDLE_METACARPAL].distance_to(
-			joint_rotations[OpenXRInterface.HAND_JOINT_MIDDLE_INTERMEDIATE]
-		)
-		)
-		#joint_rotations[OpenXRInterface.HAND_JOINT_MIDDLE_METACARPAL].distance_to(
-			#joint_rotations[OpenXRInterface.HAND_JOINT_MIDDLE_PROXIMAL]
-		#)+
-		#joint_rotations[OpenXRInterface.HAND_JOINT_MIDDLE_PROXIMAL].distance_to(
-			#joint_rotations[OpenXRInterface.HAND_JOINT_MIDDLE_INTERMEDIATE]
-		#)+
-		#joint_rotations[OpenXRInterface.HAND_JOINT_MIDDLE_INTERMEDIATE].distance_to(
-			#joint_rotations[OpenXRInterface.HAND_JOINT_MIDDLE_DISTAL]
-		#)+
-		#joint_rotations[OpenXRInterface.HAND_JOINT_MIDDLE_DISTAL].distance_to(
-			#joint_rotations[OpenXRInterface.HAND_JOINT_MIDDLE_TIP]
-		#)
-	#)/4.0
-	if finger < finger_activation_distance and !middle_pointing:
-		middle_pointing = true
-	elif finger > finger_activation_distance and middle_pointing:
-		play_sound(.9)
-		middle_pointing = false
-	return finger
-
-func ring_finger()->float:
-	var finger := (
-		joint_rotations[OpenXRInterface.HAND_JOINT_RING_METACARPAL].distance_to(
-			joint_rotations[OpenXRInterface.HAND_JOINT_RING_INTERMEDIATE]
-		)
-		)
-		#joint_rotations[OpenXRInterface.HAND_JOINT_RING_METACARPAL].distance_to(
-			#joint_rotations[OpenXRInterface.HAND_JOINT_RING_PROXIMAL]
-		#)+
-		#joint_rotations[OpenXRInterface.HAND_JOINT_RING_PROXIMAL].distance_to(
-			#joint_rotations[OpenXRInterface.HAND_JOINT_RING_INTERMEDIATE]
-		#)+
-		#joint_rotations[OpenXRInterface.HAND_JOINT_RING_INTERMEDIATE].distance_to(
-			#joint_rotations[OpenXRInterface.HAND_JOINT_RING_DISTAL]
-		#)+
-		#joint_rotations[OpenXRInterface.HAND_JOINT_RING_DISTAL].distance_to(
-			#joint_rotations[OpenXRInterface.HAND_JOINT_RING_TIP]
-		#)
-	#)/4.0
-	if finger < finger_activation_distance and !ring_pointing:
-		ring_pointing = true
-	elif finger > finger_activation_distance and ring_pointing:
-		play_sound(.8)
-		ring_pointing = false
-	return finger
-
-func little_finger()->float:
-	var finger := (
-		joint_rotations[OpenXRInterface.HAND_JOINT_LITTLE_METACARPAL].distance_to(
-			joint_rotations[OpenXRInterface.HAND_JOINT_LITTLE_INTERMEDIATE]
-		)
-		)
-		#joint_rotations[OpenXRInterface.HAND_JOINT_LITTLE_METACARPAL].distance_to(
-			#joint_rotations[OpenXRInterface.HAND_JOINT_LITTLE_PROXIMAL]
-		#)+
-		#joint_rotations[OpenXRInterface.HAND_JOINT_LITTLE_PROXIMAL].distance_to(
-			#joint_rotations[OpenXRInterface.HAND_JOINT_LITTLE_INTERMEDIATE]
-		#)+
-		#joint_rotations[OpenXRInterface.HAND_JOINT_LITTLE_INTERMEDIATE].distance_to(
-			#joint_rotations[OpenXRInterface.HAND_JOINT_LITTLE_DISTAL]
-		#)+
-		#joint_rotations[OpenXRInterface.HAND_JOINT_LITTLE_DISTAL].distance_to(
-			#joint_rotations[OpenXRInterface.HAND_JOINT_LITTLE_TIP]
-		#)
-	#)/4.0
-	if finger < finger_activation_distance and !little_pointing:
-		little_pointing = true
-	elif finger > finger_activation_distance and little_pointing:
-		play_sound(.7)
-		little_pointing = false
-	return finger
-
-func thumb_finger()->float:
-	var finger := (
-		joint_rotations[OpenXRInterface.HAND_JOINT_THUMB_METACARPAL].distance_to(
-			joint_rotations[OpenXRInterface.HAND_JOINT_THUMB_DISTAL]
-		)
-		#joint_rotations[OpenXRInterface.HAND_JOINT_THUMB_METACARPAL].distance_to(
-			#joint_rotations[OpenXRInterface.HAND_JOINT_THUMB_PROXIMAL]
-		#)+
-		#joint_rotations[OpenXRInterface.HAND_JOINT_THUMB_PROXIMAL].distance_to(
-			#joint_rotations[OpenXRInterface.HAND_JOINT_THUMB_DISTAL]
-		#)+
-		#joint_rotations[OpenXRInterface.HAND_JOINT_THUMB_DISTAL].distance_to(
-			#joint_rotations[OpenXRInterface.HAND_JOINT_THUMB_TIP]
-		#)
-	)
-	#)/4.0
-	if finger < finger_activation_distance and !thumb_pointing:
-		thumb_pointing = true
-	elif finger > finger_activation_distance and thumb_pointing:
-		play_sound(.6)
-		thumb_pointing = false
-	return finger
 
 func play_sound(pitch_scale:float=1.0):
 	var tmpaudio = AudioStreamPlayer3D.new()
