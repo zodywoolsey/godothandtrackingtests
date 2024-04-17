@@ -18,7 +18,7 @@ func init_xr():
 		if interface.name == "OpenXR":
 			XRServer.get_interface(interface.id).initialize()
 			# tell the viewport to be designated to rendering for the XR device
-			get_viewport().use_xr = true
+			#get_viewport().use_xr = true
 			# Set the engine physics tick rate to be the same as the headset 
 			#	refresh rate to keep the physics in sync with the device data
 			Engine.physics_ticks_per_second = XRServer.get_interface(interface.id).display_refresh_rate

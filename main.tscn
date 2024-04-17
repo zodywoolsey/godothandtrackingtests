@@ -82,6 +82,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
 current = true
 
 [node name="XRCamera3D" type="XRCamera3D" parent="XROrigin3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 1)
 
 [node name="BetterOpenXRHand2" type="Node3D" parent="XROrigin3D"]
 script = ExtResource("3_hk8o6")
@@ -126,9 +127,8 @@ script = SubResource("GDScript_hpwp3")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.458161, 1.6, -0.5)
 
 [node name="Panel3D" type="StaticBody3D" parent="."]
-transform = Transform3D(-4.37114e-08, 0, -1, 0, 1, 0, 1, 0, -4.37114e-08, 0.612666, 1.5, 0)
+transform = Transform3D(-5.96046e-08, 0, -1, 0, 1, 0, 1, 0, -5.56119e-08, 0.707531, 1.5, 0)
 script = ExtResource("8_ibk1e")
 _auto_load_ui = ExtResource("9_up8qh")
-transparent = false
 
 [editable path="Button3D4"]
