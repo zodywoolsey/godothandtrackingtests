@@ -5,10 +5,8 @@ var speed:float=.3
 var collon:bool = true:
 	set(value):
 		collon = value
-		if value == false:
-			collision_shape_3d.disabled = true
-		if value == true:
-			collision_shape_3d.disabled = false
+		collision_shape_3d.disabled = !collon
+
 var collision_layers:int=6
 @onready var collision_shape_3d = $RigidBody3D/CollisionShape3D
 @onready var rigid_body_3d = $RigidBody3D
@@ -21,6 +19,7 @@ func _ready():
 
 #dampening for the hand tracker indicator to smooth out tracking jitter
 func _physics_process(delta):
+	#position = target
 	position.x = lerpf(position.x,target.x,speed)
 	position.y = lerpf(position.y,target.y,speed)
 	position.z = lerpf(position.z,target.z,speed)

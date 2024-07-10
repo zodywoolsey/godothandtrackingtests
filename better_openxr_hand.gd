@@ -68,12 +68,13 @@ func _physics_process(delta):
 				joint_positions[num] = child.target
 				joint_rotations[num] = child.rotation_degrees
 				if num == 0:
-					child.find_child("label",true,false).text = "index: {0}\nmiddle: {1}\nring: {2}\nlittle: {3}\nthumb: {4}".format([
+					child.find_child("label",true,false).text = "index: {0}\nmiddle: {1}\nring: {2}\nlittle: {3}\nthumb: {4}\n{5}".format([
 						index_closedness,
 						middle_closedness,
 						ring_closedness,
 						little_closedness,
-						thumb_closedness])
+						thumb_closedness,
+						str(child.rigid_body_3d.position)+str(child.rigid_body_3d.get_child(0).position)])
 					if abs(joint_rotations[num].z) > 135.0 and index_cumulative_angle > 90.0:
 						child.visible = true
 					elif child.visible and abs(joint_rotations[num].z) < 100.0:
@@ -94,9 +95,11 @@ func setup_hand():
 		tmp.name = str(i)
 		#if left hand, add the left hand collision layer for using ui
 		if hand == 0:
+			print('left hand')
 			tmp.collision_layers += 16
 		#if right hand, add the right hand collision layer for using ui
 		elif hand == 1:
+			print('right hand')
 			tmp.collision_layers += 32
 		#if not a tip joint, remove the sided button activation col layer
 		if i not in [5,10,15,20,25]:
@@ -125,7 +128,7 @@ func setup_hand():
 				tmpbutton.hand = hand
 				#disable collision for this join to prevent weird physics
 				#	behaviors with the button positions
-				tmp.collon = false
+				tmp.collon = true
 				tmp.add_child(tmpbutton)
 
 func play_sound(pitch_scale:float=1.0):
